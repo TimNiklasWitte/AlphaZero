@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np 
 
 
-def log(train_summary_writer, policyValueNetwork, num_steps, epoch):
+def log(train_summary_writer, policyValueNetwork, num_steps, train_step):
     
     #
     # Get losses
@@ -23,11 +23,11 @@ def log(train_summary_writer, policyValueNetwork, num_steps, epoch):
     # Write to TensorBoard
     #
     with train_summary_writer.as_default():
-        tf.summary.scalar("loss", loss, step=epoch)
-        tf.summary.scalar("policy_loss", policy_loss, step=epoch)
-        tf.summary.scalar("value_loss", value_loss, step=epoch)
+        tf.summary.scalar("loss", loss, step=train_step)
+        tf.summary.scalar("policy_loss", policy_loss, step=train_step)
+        tf.summary.scalar("value_loss", value_loss, step=train_step)
 
-        tf.summary.scalar("num_steps", num_steps, step=epoch)
+        tf.summary.scalar("num_steps", num_steps, step=train_step)
 
     #
     # Output

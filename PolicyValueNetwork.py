@@ -13,14 +13,12 @@ class PolicyValueNetwork(tf.keras.Model):
 
         self.backend_policy_layer_list = [
             tf.keras.layers.Dense(10, activation="tanh"),
-            tf.keras.layers.Dense(10, activation="tanh"),
-            tf.keras.layers.Dense(2, activation=tf.nn.softmax)
+            tf.keras.layers.Dense(2, activation="softmax")
         ]
 
         self.backend_value_layer_list = [
             tf.keras.layers.Dense(10, activation="tanh"),
-            tf.keras.layers.Dense(10, activation="tanh"),
-            tf.keras.layers.Dense(1, activation="sigmoid")
+            tf.keras.layers.Dense(1, activation=None)
         ]
    
 

@@ -38,7 +38,7 @@ class MCTS:
 
         env = copy.deepcopy(env)
         self.env = env
-        self.root = Node(parent=None, env=env, action=-1, state=state, p=1, reward=-1, done=False)
+        self.root = Node(parent=None, env=env, action=-1, state=state, p=1, reward=0, done=False)
 
         self.policyValueNetwork = policyValueNetwork
  
@@ -54,15 +54,10 @@ class MCTS:
       
             while len(current.childrens) != 0:
      
-                childrens = [node for node in current.childrens]
-
-                if len(childrens) == 0:
-                    break
-
-                UCB_values = [node.q + current.getU(node) for node in childrens]
+                UCB_values = [node.q + current.getU(node) for node in current.childrens]
                 
                 max_idx = np.argmax(UCB_values)
-                current = childrens[max_idx]
+                current = current.childrens[max_idx]
 
             
             #
@@ -100,20 +95,19 @@ class MCTS:
         return self.get_policy()
         
     
-    def backup(self, node, v):
+    def backup(self, node, G):
 
         current = node
-    
+
         while current:
             
+            G = current.reward + self.gamma * G
+
             current.n += 1
 
-            #G = current.reward + self.gamma * G
-            #G = current.reward + G
-            current.w += v
-            
+            current.w = current.w + G
             current.q = current.w / current.n
-            
+
             current = current.parent
 
         
