@@ -101,30 +101,15 @@ class MCTS:
 
         while current:
             
-            # wrong?
-            G = current.reward + self.gamma * G
-
             current.n += 1
 
-            current.w = current.w + G 
+            current.w = current.w + G
             current.q = current.w / current.n
 
             current = current.parent
 
-    # Works with this:
-    # def backup(self, node, v):
-
-    #     current = node
-    
-    #     while current:
-            
-    #         current.n += 1
-
-    #         current.w += v
-            
-    #         current.q = current.w / current.n
-            
-    #         current = current.parent
+            if current:
+                G = current.reward + self.gamma * G
         
 
            
