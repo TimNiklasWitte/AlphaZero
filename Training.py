@@ -53,6 +53,12 @@ def fill(policyValueNetwork, replayMemory, num_trajectories):
                 
             state, _ = env.reset()
 
+            if not done:
+                state = np.expand_dims(state, axis=0)
+                _, value = policyValueNetwork(state)
+                value = value.numpy()[0][0]
+                reward_list.append(value)
+
             for idx, (state, policy) in enumerate(zip(state_list, policy_list)):
                 reward_list_len = len(reward_list[idx:])
                 value = np.dot(reward_list[idx:], discount_factors[:reward_list_len])
