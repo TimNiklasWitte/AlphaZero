@@ -40,7 +40,8 @@ def fill(policyValueNetwork, replayMemory, num_trajectories):
         state_list.append(state)
         policy_list.append(policy)
         
-        action = np.argmax(policy) #np.random.choice(2, p=policy)
+        # randomly choose action (not the best one!)
+        action = np.random.choice(2, p=policy)
         state, reward, done, _, _ = env.step(action)
         reward_list.append(reward)
 
