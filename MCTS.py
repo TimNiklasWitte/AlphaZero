@@ -107,15 +107,10 @@ class MCTS:
             current.q = current.w / current.n
 
             G = current.reward + self.gamma * G
-            
+
             current = current.parent
 
-         
-                
-        
 
-           
-           
     def get_policy(self):
 
         n_values = np.array([node.n for node in self.root.childrens])
