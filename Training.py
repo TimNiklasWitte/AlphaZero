@@ -50,14 +50,16 @@ def fill(policyValueNetwork, replayMemory, num_trajectories):
         if done or cnt_steps == max_steps:
         
             eval_num_steps_list.append(cnt_steps)
-                
-            state, _ = env.reset()
-
+            
+            # bootstrap
             if not done:
                 state = np.expand_dims(state, axis=0)
                 _, value = policyValueNetwork(state)
                 value = value.numpy()[0][0]
                 reward_list.append(value)
+
+            state, _ = env.reset()
+            done = False 
 
             for idx, (state, policy) in enumerate(zip(state_list, policy_list)):
                 reward_list_len = len(reward_list[idx:])
@@ -65,13 +67,13 @@ def fill(policyValueNetwork, replayMemory, num_trajectories):
                 value = np.array([value])
                 
                 replayMemory.add_sample(state, policy, value)
-                 
+            
             cnt_steps = 0
             state_list = []
             policy_list = []
             reward_list = []
 
-
+    # bootstrap
     if not done:
             
         state = np.expand_dims(state, axis=0)
