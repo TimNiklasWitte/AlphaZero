@@ -110,10 +110,12 @@ class MCTS:
 
             current = current.parent
 
-
+         
+        
     def get_policy(self):
 
-        n_values = np.array([node.n for node in self.root.childrens])
+        # softmax
+        n_values = np.array([np.exp(node.n) for node in self.root.childrens])
         n_total = np.sum(n_values)
 
         if n_total == 0:
