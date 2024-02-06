@@ -106,10 +106,12 @@ class MCTS:
             current.w = current.w + G
             current.q = current.w / current.n
 
+            G = current.reward + self.gamma * G
+            
             current = current.parent
 
-            if current:
-                G = current.reward + self.gamma * G
+         
+                
         
 
            
