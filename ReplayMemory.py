@@ -49,7 +49,7 @@ class ReplayMemory:
  
             
 
-SHUFFLE_WINDOW_SIZE = 1000
+SHUFFLE_WINDOW_SIZE = 2000
 BATCH_SIZE = 32
 def prepare_data(dataset):
     dataset = dataset.shuffle(SHUFFLE_WINDOW_SIZE)

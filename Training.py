@@ -14,7 +14,7 @@ filterwarnings(action='ignore', category=DeprecationWarning, message='`np.bool8`
 
 num_train_steps = 100
 
-max_steps = 350
+max_steps = 1000
 gamma = 0.9
 discount_factors = np.array([gamma**i for i in range(max_steps + 1)])
 
@@ -113,14 +113,14 @@ def main():
     #
     # Replay memory: put some init trajectories in
     #
-    replayMemory = ReplayMemory(2000)
-    num_steps = fill(policyValueNetwork, replayMemory, 1000)
+    replayMemory = ReplayMemory(20000)
+    num_steps = fill(policyValueNetwork, replayMemory, 2000)
   
     for train_step in range(num_train_steps):
 
         # was initial filled
         if train_step != 0:
-            num_steps = fill(policyValueNetwork, replayMemory, 500)
+            num_steps = fill(policyValueNetwork, replayMemory, 1000)
 
         #
         # Train network
