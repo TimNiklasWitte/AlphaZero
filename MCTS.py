@@ -25,8 +25,8 @@ class Node:
 
         self.done = done
 
-    def getU(self):
-        return c_puct * self.p * (np.sqrt(self.parent.n)/(1 + self.n))
+    def getU(self,child):
+        return c_puct * child.p * (np.sqrt(self.n)/(1 + child.n))
 
 
 class MCTS:
@@ -54,7 +54,7 @@ class MCTS:
       
             while len(current.childrens) != 0:
      
-                UCB_values = [node.q + node.getU() for node in current.childrens]
+                UCB_values = [node.q + current.getU(node) for node in current.childrens]
                 
                 max_idx = np.argmax(UCB_values)
                 current = current.childrens[max_idx]
