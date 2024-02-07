@@ -53,7 +53,7 @@ def fill(policyValueNetwork, replayMemory, num_trajectories):
              
         if done or cnt_steps == max_steps:
             
-            reward_list = reward_list/max_return
+            reward_list = reward_list * (1/max_return)
 
             eval_num_steps_list.append(cnt_steps)
             
@@ -82,7 +82,7 @@ def fill(policyValueNetwork, replayMemory, num_trajectories):
     # bootstrap
     if not done:
         
-        reward_list = reward_list/max_return
+        reward_list = reward_list * (1/max_return)
 
         state = np.expand_dims(state, axis=0)
         _, value = policyValueNetwork(state)
