@@ -19,6 +19,8 @@ gamma = 0.9
 discount_factors = np.array([gamma**i for i in range(max_steps + 1)])
 
 max_return = np.dot(np.ones(shape=(max_steps + 1, )), discount_factors)
+max_return = float(max_return)
+
 
 def fill(policyValueNetwork, replayMemory, num_trajectories):
     env = gym.make("CartPole-v1") 
@@ -50,7 +52,9 @@ def fill(policyValueNetwork, replayMemory, num_trajectories):
         cnt_steps += 1
              
         if done or cnt_steps == max_steps:
-        
+            
+            reward_list = reward_list/max_return
+
             eval_num_steps_list.append(cnt_steps)
             
             # bootstrap
@@ -58,7 +62,6 @@ def fill(policyValueNetwork, replayMemory, num_trajectories):
                 state = np.expand_dims(state, axis=0)
                 _, value = policyValueNetwork(state)
                 value = value.numpy()[0][0]
-                value = value * max_return
                 reward_list.append(value)
             
 
@@ -69,7 +72,6 @@ def fill(policyValueNetwork, replayMemory, num_trajectories):
                 reward_list_len = len(reward_list[idx:])
                 value = np.dot(reward_list[idx:], discount_factors[:reward_list_len])
                 value = np.array([value])
-                value = value / max_return
                 replayMemory.add_sample(state, policy, value)
             
             cnt_steps = 0
@@ -79,18 +81,19 @@ def fill(policyValueNetwork, replayMemory, num_trajectories):
 
     # bootstrap
     if not done:
-            
+        
+        reward_list = reward_list/max_return
+
         state = np.expand_dims(state, axis=0)
         _, value = policyValueNetwork(state)
         value = value.numpy()[0][0]
-        value = value * max_return
+     
         reward_list.append(value)
 
         for idx, (state, policy) in enumerate(zip(state_list, policy_list)):
             reward_list_len = len(reward_list[idx:])
             value = np.dot(reward_list[idx:], discount_factors[:reward_list_len])
             value = np.array([value])
-            value = value / max_return
             replayMemory.add_sample(state, policy, value)
 
     print(eval_num_steps_list)

@@ -7,7 +7,7 @@ class PolicyValueNetwork(tf.keras.Model):
         super(PolicyValueNetwork, self).__init__()
 
         self.frontend_layer_list = [
-            tf.keras.layers.Dense(25, activation="tanh"),
+            tf.keras.layers.Dense(50, activation="tanh"),
             tf.keras.layers.Dense(25, activation="tanh")
         ]
 
@@ -49,21 +49,6 @@ class PolicyValueNetwork(tf.keras.Model):
 
         return policy, value 
     
-
-    def call_no_tf_func(self, x):
-        
-        for layer in self.frontend_layer_list:
-            x = layer(x)
-
-        policy = x
-        for layer in self.backend_policy_layer_list:
-            policy = layer(policy)
-
-        value = x
-        for layer in self.backend_value_layer_list:
-            value = layer(value)
-
-        return policy, value 
 
     @tf.function
     def train_step(self, x, target_policy, target_value):
