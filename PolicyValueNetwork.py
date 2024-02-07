@@ -18,7 +18,7 @@ class PolicyValueNetwork(tf.keras.Model):
 
         self.backend_value_layer_list = [
             tf.keras.layers.Dense(10, activation="tanh"),
-            tf.keras.layers.Dense(1, activation=None)
+            tf.keras.layers.Dense(1, activation="sigmoid")
         ]
    
 
