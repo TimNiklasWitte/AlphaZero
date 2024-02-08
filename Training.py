@@ -37,7 +37,7 @@ def fill(policyValueNetwork, replayMemory, num_trajectories):
     cnt_steps = 0
 
     for i in tqdm.tqdm(range(num_trajectories),position=0, leave=True):
-        mcts = MCTS(env, state, policyValueNetwork)
+        mcts = MCTS(env, state, policyValueNetwork, max_return)
 
         policy = mcts.run(200)
 
@@ -53,8 +53,7 @@ def fill(policyValueNetwork, replayMemory, num_trajectories):
              
         if done or cnt_steps == max_steps:
             
-            reward_list = np.array(reward_list)
-            reward_list = reward_list / max_return
+            reward_list = [reward/max_return for reward in reward_list]
 
             eval_num_steps_list.append(cnt_steps)
             
@@ -63,7 +62,7 @@ def fill(policyValueNetwork, replayMemory, num_trajectories):
                 state = np.expand_dims(state, axis=0)
                 _, value = policyValueNetwork(state)
                 value = value.numpy()[0][0]
-                reward_list = np.append(reward_list, value)
+                reward_list.append(value)
             
 
             state, _ = env.reset()
@@ -83,14 +82,13 @@ def fill(policyValueNetwork, replayMemory, num_trajectories):
     # bootstrap
     if not done:
         
-        reward_list = np.array(reward_list)
-        reward_list = reward_list / max_return
+        reward_list = [reward/max_return for reward in reward_list]
 
         state = np.expand_dims(state, axis=0)
         _, value = policyValueNetwork(state)
         value = value.numpy()[0][0]
-     
-        reward_list = np.append(reward_list, value)
+        reward_list.append(value)
+
 
         for idx, (state, policy) in enumerate(zip(state_list, policy_list)):
             reward_list_len = len(reward_list[idx:])
@@ -150,7 +148,7 @@ def main():
         dataset = dataset.apply(prepare_data)
 
         # Train steps
-        for num_epoch in range(10):
+        for num_epoch in range(5):
             for state, target_policy, target_value in tqdm.tqdm(dataset,position=0, leave=True):
                 policyValueNetwork.train_step(state, target_policy, target_value)
         

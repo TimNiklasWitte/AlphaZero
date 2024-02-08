@@ -31,7 +31,7 @@ class Node:
 
 class MCTS:
 
-    def __init__(self, env, state, policyValueNetwork):
+    def __init__(self, env, state, policyValueNetwork, max_return):
         
         self.N = 0
         self.gamma = 0.9
@@ -41,7 +41,9 @@ class MCTS:
         self.root = Node(parent=None, env=env, action=-1, state=state, p=1, reward=0, done=False)
 
         self.policyValueNetwork = policyValueNetwork
- 
+
+        self.max_return = max_return
+
     def run(self, num_iterations: int):
         
         for i in range(num_iterations):
@@ -82,6 +84,7 @@ class MCTS:
                                     
                     next_state, reward, done, _, _ = env_current.step(action)
                     next_state = np.copy(next_state)
+                    reward = reward/self.max_return
                     node = Node(parent=current, env=env_current, state=next_state, action=action, p=policy[action], reward=reward,done=done)
                     current.childrens.append(node)
                 
