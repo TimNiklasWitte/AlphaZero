@@ -12,8 +12,9 @@ from Logging import *
 from warnings import filterwarnings
 filterwarnings(action='ignore', category=DeprecationWarning, message='`np.bool8` is a deprecated alias')
 
-num_train_steps = 100
+num_train_steps = 500
 
+replay_memory_size = 25000
 max_steps = 1000
 gamma = 0.9
 discount_factors = np.array([gamma**i for i in range(max_steps + 1)])
@@ -22,11 +23,9 @@ max_return = np.dot(np.ones(shape=(max_steps + 1, )), discount_factors)
 max_return = float(max_return)
 
 
-def fill(policyValueNetwork, replayMemory, num_trajectories):
+def fill(policyValueNetwork, replayMemory, max_steps):
     env = gym.make("CartPole-v1") 
     state, _ = env.reset()
-
-    eval_num_steps_list = []
 
     state_list = []
     policy_list = []
@@ -34,12 +33,10 @@ def fill(policyValueNetwork, replayMemory, num_trajectories):
 
     done = False
   
-    cnt_steps = 0
-
-    for i in tqdm.tqdm(range(num_trajectories),position=0, leave=True):
+    for i in tqdm.tqdm(range(max_steps),position=0, leave=True):
         mcts = MCTS(env, state, policyValueNetwork, max_return)
 
-        policy = mcts.run(200)
+        policy = mcts.run(400)
 
         state_list.append(state)
         policy_list.append(policy)
@@ -49,13 +46,9 @@ def fill(policyValueNetwork, replayMemory, num_trajectories):
         state, reward, done, _, _ = env.step(action)
         reward_list.append(reward)
 
-        cnt_steps += 1
-             
-        if done or cnt_steps == max_steps:
+        if done:
             
             reward_list = [reward/max_return for reward in reward_list]
-
-            eval_num_steps_list.append(cnt_steps)
             
             # bootstrap
             if not done:
@@ -64,21 +57,14 @@ def fill(policyValueNetwork, replayMemory, num_trajectories):
                 value = value.numpy()[0][0]
                 reward_list.append(value)
             
-
-            state, _ = env.reset()
-            done = False 
-
             for idx, (state, policy) in enumerate(zip(state_list, policy_list)):
                 reward_list_len = len(reward_list[idx:])
                 value = np.dot(reward_list[idx:], discount_factors[:reward_list_len])
                 value = np.array([value])
                 replayMemory.add_sample(state, policy, value)
-            
-            cnt_steps = 0
-            state_list = []
-            policy_list = []
-            reward_list = []
 
+            break 
+    
     # bootstrap
     if not done:
         
@@ -96,11 +82,7 @@ def fill(policyValueNetwork, replayMemory, num_trajectories):
             value = np.array([value])
             replayMemory.add_sample(state, policy, value)
 
-    print(eval_num_steps_list)
-    if len(eval_num_steps_list) == 0:
-        return max_steps
-    else:     
-        return np.average(eval_num_steps_list)
+    return i 
 
 
 def main():
@@ -122,14 +104,22 @@ def main():
     #
     # Replay memory: put some init trajectories in
     #
-    replayMemory = ReplayMemory(20000)
-    num_steps = fill(policyValueNetwork, replayMemory, 2000)
-  
-    for train_step in range(num_train_steps):
 
-        # was initial filled
-        if train_step != 0:
-            num_steps = fill(policyValueNetwork, replayMemory, 1000)
+    print("Step: 0")
+
+    replayMemory = ReplayMemory(replay_memory_size)
+    num_steps = fill(policyValueNetwork, replayMemory, max_steps)
+    print(f"  num_steps: {num_steps}")
+    print()
+
+    # Record step 0 (only num_steps)
+    with train_summary_writer.as_default():
+        tf.summary.scalar("num_steps", num_steps, step=0)
+
+    for train_step in range(1, num_train_steps):
+
+        print("Step: ", train_step)
+        num_steps = fill(policyValueNetwork, replayMemory, max_steps)
 
         #
         # Train network
@@ -147,10 +137,8 @@ def main():
         
         dataset = dataset.apply(prepare_data)
 
-        # Train steps
-        for num_epoch in range(5):
-            for state, target_policy, target_value in tqdm.tqdm(dataset,position=0, leave=True):
-                policyValueNetwork.train_step(state, target_policy, target_value)
+        for state, target_policy, target_value in tqdm.tqdm(dataset,position=0, leave=True):
+            policyValueNetwork.train_step(state, target_policy, target_value)
         
 
         log(train_summary_writer, policyValueNetwork, num_steps, train_step)
