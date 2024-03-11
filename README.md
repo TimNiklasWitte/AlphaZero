@@ -1,6 +1,6 @@
 # AlphaZero Cart Pole
 
-An implemention of the AlphaZero algorithm for the Cart Pole enviroment (intermediate rewards!).
+An implementation of the AlphaZero algorithm for the Cart Pole environment (intermediate rewards!).
 
 ## Training
 <img src="./plots/Training.png" width="900" height="300">
