@@ -26,6 +26,7 @@ def main():
     
     sns.lineplot(data=df.loc[:, "num steps"], ax=axes[0], markers=True, label="not smoothed", alpha=0.6)
     axes[0].set_title("Number of steps")
+    axes[0].set_ylabel("Number of steps")
 
     num_steps_data = df.loc[:, "num steps"].to_numpy()
     num_steps_data_smoothed = get_expo_smoothing(num_steps_data, alpha=0.9)
@@ -34,9 +35,11 @@ def main():
      
     sns.lineplot(data=df.loc[:, "policy loss"], ax=axes[1], markers=True)
     axes[1].set_title("Policy loss")
+    axes[1].set_ylabel("Loss")
 
     sns.lineplot(data=df.loc[:, "value loss"], ax=axes[2], markers=True)
     axes[2].set_title("Value loss")
+    axes[2].set_ylabel("Loss")
 
     # grid
     for ax in axes.flatten():
