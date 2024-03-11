@@ -7,25 +7,30 @@ class PolicyValueNetwork(tf.keras.Model):
         super(PolicyValueNetwork, self).__init__()
 
         self.frontend_layer_list = [
-            tf.keras.layers.Dense(50, activation="tanh"),
-            tf.keras.layers.Dense(25, activation="tanh")
+            tf.keras.layers.Dense(25, activation="tanh"),
+            tf.keras.layers.BatchNormalization(),
+            
+            tf.keras.layers.Dense(20, activation="tanh"),
+            tf.keras.layers.BatchNormalization()
         ]
 
         self.backend_policy_layer_list = [
             tf.keras.layers.Dense(10, activation="tanh"),
+            tf.keras.layers.BatchNormalization(),
             tf.keras.layers.Dense(2, activation="softmax")
         ]
 
         self.backend_value_layer_list = [
             tf.keras.layers.Dense(10, activation="tanh"),
+            tf.keras.layers.BatchNormalization(),
             tf.keras.layers.Dense(1, activation="sigmoid")
         ]
    
 
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
 
-        self.policy_loss_function =  tf.keras.losses.CategoricalCrossentropy()
-        self.value_loss_function =  tf.keras.losses.MeanSquaredError()
+        self.cce_loss =  tf.keras.losses.CategoricalCrossentropy()
+        self.mse_loss =  tf.keras.losses.MeanSquaredError()
 
         self.metric_loss = tf.keras.metrics.Mean(name="loss")
 
@@ -34,18 +39,27 @@ class PolicyValueNetwork(tf.keras.Model):
         self.metric_value_loss = tf.keras.metrics.Mean(name="value_loss")
 
     @tf.function
-    def call(self, x):
+    def call(self, x, training=False):
         
         for layer in self.frontend_layer_list:
-            x = layer(x)
+            if isinstance(layer, tf.keras.layers.BatchNormalization):
+                x = layer(x, training)
+            else:
+                x = layer(x)
 
         policy = x
         for layer in self.backend_policy_layer_list:
-            policy = layer(policy)
+            if isinstance(layer, tf.keras.layers.BatchNormalization):
+                policy = layer(policy, training)
+            else:
+                policy = layer(policy)
 
         value = x
         for layer in self.backend_value_layer_list:
-            value = layer(value)
+            if isinstance(layer, tf.keras.layers.BatchNormalization):
+                value = layer(value, training)
+            else:
+                value = layer(value)
 
         return policy, value 
     
@@ -54,10 +68,10 @@ class PolicyValueNetwork(tf.keras.Model):
     def train_step(self, x, target_policy, target_value):
     
         with tf.GradientTape() as tape:
-            policy, value = self(x)
+            policy, value = self(x, training=True)
 
-            policy_loss = self.policy_loss_function(target_policy, policy)
-            value_loss = self.value_loss_function(target_value, value)
+            policy_loss = self.cce_loss(target_policy, policy)
+            value_loss = self.mse_loss(target_value, value)
 
             loss = policy_loss + value_loss
 
